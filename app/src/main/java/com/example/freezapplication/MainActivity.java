@@ -7,16 +7,17 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.freezapplication.Utils.MyAsynckTask;
 import com.example.freezapplication.Utils.MyHandlerThread;
 import com.example.freezapplication.Utils.Utils;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MyAsynckTask.Listeners {
 
     //FOR DESIGN
     private ProgressBar progressBar;
 
     //FOR DATA
-    //1- Declaring a handlerThread
+    //A1- Declaring a handlerThread
     private MyHandlerThread handlerThread;
 
     @Override
@@ -26,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Get progressbar from layout
         this.progressBar = findViewById(R.id.activity_main_progress_bar);
-        //Configure Handler Thread
+        //A3Configure Handler Thread
         this.configureHandlerThread();
     }
 
@@ -49,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "CLICKED ON BUTTON \"EXECUTE ACTION IN BACKGROUND\"",Toast.LENGTH_SHORT).show();
                 this.startHandlerThread();
                 break;
+            case 60: // CASE USER CLICKED ON BUTTON "EXECUTE ASYNCTASK"
+                this.startAsyncTask();
+                break;
         }
     }
 
@@ -56,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     // CONFIGURATION
     // -----------------
 
-    // 2- Configuring the HandlerThread
+    // A2- Configuring the HandlerThread
     private void configureHandlerThread(){
         handlerThread = new MyHandlerThread("MyAwesomeHanderThread", this.progressBar);
     }
@@ -65,9 +69,44 @@ public class MainActivity extends AppCompatActivity {
     // BACKGROUND TASK (HandlerThread & AsyncTask)
     // -------------------------------------------
 
-    // 4- EXECUTE HANDLER THREAD
+    // A4- EXECUTE HANDLER THREAD
     private void startHandlerThread(){
         handlerThread.startHandler();
     }
 
+    // ------
+
+    // EXECUTE ASYNC TASK
+    private void startAsyncTask() {
+        new MyAsynckTask(this).execute();
+    }
+    //B2- Override methods of callback
+    @Override
+    public void onPreExecute() {
+        this.updateUIBeforeTask();
+
+    }
+
+    @Override
+    public void doInBackground() {
+
+    }
+
+    @Override
+    public void onPostExecute(Long success) {
+        this.updateUIAfterTask(success);
+    }
+
+    // -----------------
+    // UPDATE UI
+    // -----------------
+
+    public void updateUIBeforeTask(){
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void updateUIAfterTask(Long taskEnd){
+        progressBar.setVisibility(View.GONE);
+        Toast.makeText(this, "Task is finally finished at : "+taskEnd+" !", Toast.LENGTH_SHORT).show();
+    }
 }
