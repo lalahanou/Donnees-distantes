@@ -1,6 +1,7 @@
 package com.example.freezapplication.Utils;
 
 import com.example.freezapplication.Models.GithubUser;
+import com.example.freezapplication.Models.GithubUserInfo;
 
 import java.util.List;
 
@@ -15,6 +16,10 @@ public interface GithubService {
 
     @GET("users/{username}/following")
     Observable<List<GithubUser>> getFollowing(@Path("username") String username);
+
+    @GET("/users/{username}")
+    Observable<GithubUserInfo> getUserInfos(@Path("username") String username);
+
 
     public static final Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("https://api.github.com/")

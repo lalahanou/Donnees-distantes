@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.freezapplication.Models.GithubUser;
+import com.example.freezapplication.Models.GithubUserInfo;
 import com.example.freezapplication.R;
 import com.example.freezapplication.Utils.GithubStreams;
 
@@ -60,7 +61,8 @@ public class MainFragment extends Fragment {
     //-------------------------
     public void submit()
     {
-        this.executeHttpRequestWithRetrofit();
+       // this.executeHttpRequestWithRetrofit();
+        this.executeSecondHttpRequestWithRetrofit();
     }
 
     // -------------------
@@ -83,6 +85,9 @@ public class MainFragment extends Fragment {
         updateUIWhenStopingHTTPRequest(stringBuilder.toString());
     }
 
+    private void updateUIWithUserInfo(GithubUserInfo userInfo){
+        updateUIWhenStopingHTTPRequest("The first Following of Jake Wharthon is "+userInfo.getName()+" with "+userInfo.getFollowers()+" followers.");
+    }
     //-------------------------
     //REACTIVEX
     //-------------------------
@@ -112,6 +117,26 @@ public class MainFragment extends Fragment {
         });
     }
 
+    private void executeSecondHttpRequestWithRetrofit(){
+        this.updateUIWhenStartingHTTPRequest();
+        this.disposable = GithubStreams.streamFetchUserFollowingAndFetchFirstUserInfos("JakeWharton").subscribeWith(new DisposableObserver<GithubUserInfo>() {
+            @Override
+            public void onNext(GithubUserInfo users) {
+                Log.e("TAG","On Next");
+                updateUIWithUserInfo(users);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e("TAG","On Error"+Log.getStackTraceString(e));
+            }
+
+            @Override
+            public void onComplete() {
+                Log.e("TAG","On Complete !!");
+            }
+        });
+    }
     private Observable<String> getObservable(){
         return Observable.just("Cool !");
     }
