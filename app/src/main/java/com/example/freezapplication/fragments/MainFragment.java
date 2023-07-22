@@ -12,7 +12,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.freezapplication.Models.GithubUser;
 import com.example.freezapplication.R;
+import com.example.freezapplication.Utils.GithubStreams;
+
+import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
@@ -45,17 +49,68 @@ public class MainFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        this.disposeWhenDestroy();
+    }
+
     //-------------------------
     //ACTION
     //-------------------------
     public void submit()
     {
-        this.streamShowString();
+        this.executeHttpRequestWithRetrofit();
+    }
+
+    // -------------------
+    // UPDATE UI
+    // -------------------
+
+    private void updateUIWhenStartingHTTPRequest(){
+        txtMainFragment.setText("Downloading...");
+    }
+
+    private void updateUIWhenStopingHTTPRequest(String response){
+        txtMainFragment.setText(response);
+    }
+
+    private void updateUIWithListOfUsers(List<GithubUser> users){
+        StringBuilder stringBuilder = new StringBuilder();
+        for (GithubUser user : users){
+            stringBuilder.append("-"+user.getLogin()+"\n");
+        }
+        updateUIWhenStopingHTTPRequest(stringBuilder.toString());
     }
 
     //-------------------------
     //REACTIVEX
     //-------------------------
+
+    // 1 - Execute our Stream
+    private void executeHttpRequestWithRetrofit(){
+        // 1.1 - Update UI
+        this.updateUIWhenStartingHTTPRequest();
+        // 1.2 - Execute the stream subscribing to Observable defined inside GithubStream
+        this.disposable = GithubStreams.streamFetchUserFollowing("JakeWharton").subscribeWith(new DisposableObserver<List<GithubUser>>() {
+            @Override
+            public void onNext(List<GithubUser> users) {
+                Log.e("TAG","On Next");
+                // 1.3 - Update UI with list of users
+                updateUIWithListOfUsers(users);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.e("TAG","On Error"+Log.getStackTraceString(e));
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d("TAG","On Complete !!");
+            }
+        });
+    }
 
     private Observable<String> getObservable(){
         return Observable.just("Cool !");
